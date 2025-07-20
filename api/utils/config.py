@@ -12,8 +12,8 @@ class Settings(BaseSettings):
     MODEL_N_CTX: int = 32768
     MODEL_N_THREADS: int = 8
     MODEL_MAXTOKEN: int = 2048
-    REDIS_HOST: str
-    REDIS_PORT: int
+    REDIS_HOST: str = "localhost"
+    REDIS_PORT: int  = 6379
 
 
 
