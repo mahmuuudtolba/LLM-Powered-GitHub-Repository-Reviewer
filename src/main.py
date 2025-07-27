@@ -1,10 +1,10 @@
 from fastapi import FastAPI
 from api.routes import model
 from api.logging import get_logger
-from api.controller import ModelController
+from controller import ModelController
 from contextlib import asynccontextmanager
-from api.utils.config import get_settings
-from api.utils.redis_client import get_redis_client
+from utils.config import get_settings
+from utils.redis_client import get_redis_client
 
 logger = get_logger(__name__)
 setting = get_settings()

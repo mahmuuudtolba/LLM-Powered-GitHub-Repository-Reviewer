@@ -2,11 +2,11 @@ import anyio
 from fastapi import APIRouter, Request
 from fastapi.responses import StreamingResponse
 from llama_cpp import Llama
-from api.logging import get_logger
-from api.exception import CustomException
-from api.schemas import RepoInput
+from src.api.logging import get_logger
+from src.api.exception import CustomException
+from src.api.schemas import RepoInput
 import time
-from api.controller import DataController, ModelController
+from src.controller import DataController, ModelController
 
 model_router = APIRouter(prefix="/model", tags=["Model"])
 logger = get_logger(__name__)
@@ -22,7 +22,7 @@ async def health_check():
 
 
 @model_router.post("/review")
-async def test_model(repo_url : RepoInput , request : Request):
+async def review(repo_url : RepoInput , request : Request):
     
     redis_client = request.app.state.redis_client
     if redis_client:
@@ -40,24 +40,25 @@ async def test_model(repo_url : RepoInput , request : Request):
         data_controller = DataController()
         model_controller = ModelController()
 
-        content = await anyio.to_thread.run_sync(data_controller.repo_content , repo_url.repo_url)
-        full_prompt = model_controller.get_full_prompt(content)
+        repo_contents = await anyio.to_thread.run_sync(data_controller.get_repo_contents , repo_url.repo_url)
+        full_prompt = model_controller.get_full_prompt(repo_contents)
 
         logger.info("Loading the model")
 
 
         if hasattr(request.app.state, "llm_model") and request.app.state.llm_model:
-            llm = request.app.state.llm_model
+            llm_model = request.app.state.llm_model
         
         logger.info(f"sending to gemma ..")
 
         async def stream_llm():
-            stream = await anyio.to_thread.run_sync(
-                lambda: model_controller.generate_review_stream(llm, full_prompt)
+            llm_response_stream = await anyio.to_thread.run_sync(
+                lambda: model_controller.generate_review_stream(llm_model, full_prompt)
             )
             full_review = ""
-            for chunk in stream:
-                if "choices" in chunk and len(chunk["choices"]) > 0:
+            for chunk in llm_response_stream:
+                chunk_has_text = "choices" in chunk and len(chunk["choices"]) > 0
+                if chunk_has_text:
                     text = chunk["choices"][0]["text"]
                     full_review += text
                     yield text

@@ -1,5 +1,5 @@
 import redis
-from api.utils.config import get_settings
+from utils.config import get_settings
 
 setting = get_settings()
 

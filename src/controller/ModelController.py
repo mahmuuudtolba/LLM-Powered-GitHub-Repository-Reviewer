@@ -1,5 +1,5 @@
 from llama_cpp import Llama
-from api.utils.config import get_settings
+from utils.config import get_settings
 import os
 setting = get_settings()
 
@@ -18,8 +18,8 @@ class ModelController:
                     """
     
     def loading_model(self):
-        llm = Llama(model_path=str(setting.MODEL_PATH), n_ctx=setting.MODEL_N_CTX, n_threads=setting.MODEL_N_THREADS)
-        return llm
+        return Llama(model_path=str(setting.MODEL_PATH), n_ctx=setting.MODEL_N_CTX, n_threads=setting.MODEL_N_THREADS)
+        
 
     def generate_review_stream(self, llm: Llama, full_prompt: str):
         stream = llm.create_completion(
